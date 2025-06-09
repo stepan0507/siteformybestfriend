@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра для лучшей подруги</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             margin: 0;
             display: flex;
@@ -13,13 +19,17 @@
             background: linear-gradient(45deg, #8a2be2, #4b0082);
             font-family: 'Arial', sans-serif;
             min-height: 100vh;
-            padding-bottom: 50px; /* Добавляем отступ для подвала */
+            padding: 10px;
+            padding-bottom: 50px;
         }
 
         h1 {
             color: #fff;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
             margin: 20px 0;
+            font-size: clamp(24px, 5vw, 36px);
+            text-align: center;
+            padding: 0 10px;
         }
 
         #gameCanvas {
@@ -27,41 +37,48 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             cursor: pointer;
-            display: none; /* Скрываем канвас до начала игры */
+            display: none;
+            max-width: 100%;
+            height: auto;
+            width: min(800px, 95vw);
+            aspect-ratio: 4/3;
         }
 
         #startScreen {
             background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
+            padding: clamp(15px, 3vw, 30px);
             border-radius: 15px;
             text-align: center;
             max-width: 600px;
-            margin: 20px;
+            width: 95%;
+            margin: 20px auto;
             box-shadow: 0 0 20px rgba(0,0,0,0.2);
         }
 
         #startScreen h2 {
             color: #8a2be2;
             margin-bottom: 20px;
+            font-size: clamp(20px, 4vw, 28px);
         }
 
         #startScreen p {
             color: #333;
             margin: 10px 0;
-            font-size: 18px;
+            font-size: clamp(16px, 3vw, 18px);
         }
 
         .start-button {
             background: #ff6b6b;
             color: white;
             border: none;
-            padding: 15px 40px;
+            padding: clamp(12px, 2vw, 15px) clamp(30px, 4vw, 40px);
             border-radius: 25px;
             cursor: pointer;
-            font-size: 20px;
+            font-size: clamp(16px, 3vw, 20px);
             margin-top: 20px;
             transition: transform 0.2s, background 0.2s;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: min(300px, 80%);
         }
 
         .start-button:hover {
@@ -69,18 +86,19 @@
             transform: scale(1.05);
         }
 
-        #score {
-            font-size: 24px;
+        .start-button:active {
+            transform: scale(0.95);
+        }
+
+        #score, #timer {
+            font-size: clamp(18px, 4vw, 24px);
             color: #fff;
-            margin: 20px 0;
-            display: none; /* Скрываем счёт до начала игры */
+            margin: 10px 0;
+            text-align: center;
         }
 
         #timer {
-            font-size: 24px;
-            color: #fff;
-            margin: 10px 0;
-            display: none; /* Скрываем таймер до начала игры */
+            display: none;
         }
 
         .message {
@@ -89,24 +107,24 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
+            padding: clamp(15px, 3vw, 30px);
             border-radius: 15px;
             text-align: center;
             display: none;
             max-width: 800px;
-            width: 90%;
+            width: 95%;
             box-shadow: 0 0 30px rgba(0,0,0,0.3);
             z-index: 1000;
         }
 
         .message h2 {
             color: #8a2be2;
-            font-size: 32px;
+            font-size: clamp(24px, 5vw, 32px);
             margin-bottom: 20px;
         }
 
         .message p {
-            font-size: 24px;
+            font-size: clamp(18px, 4vw, 24px);
             color: #333;
             margin: 15px 0;
         }
@@ -114,10 +132,11 @@
         .video-container {
             margin: 20px 0;
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 */
+            padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
             border-radius: 10px;
+            width: 100%;
         }
 
         .video-container iframe {
@@ -129,63 +148,18 @@
             border: none;
         }
 
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            animation: confetti-fall 3s linear infinite;
-            z-index: 999;
-        }
-
-        @keyframes confetti-fall {
-            0% {
-                transform: translateY(-100vh) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 999;
-        }
-
-        button {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background: #ff5252;
-        }
-
         .compliments {
-            margin: 20px;
-            padding: 20px;
+            margin: 20px auto;
+            padding: clamp(15px, 3vw, 20px);
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             text-align: center;
             max-width: 600px;
+            width: 95%;
         }
 
         .rainbow-text {
-            font-size: 24px;
+            font-size: clamp(20px, 4vw, 24px);
             font-weight: bold;
             background: linear-gradient(to right, #00ff00, #800080);
             -webkit-background-clip: text;
@@ -195,72 +169,10 @@
             background-size: 200% auto;
         }
 
-        @keyframes rainbow {
-            0% {
-                background-position: 0% center;
-            }
-            100% {
-                background-position: 200% center;
-            }
-        }
-
         .compliment {
             margin: 10px 0;
-            font-size: 20px;
+            font-size: clamp(16px, 3vw, 20px);
             line-height: 1.5;
-        }
-
-        footer {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            padding: 20px 0;
-            margin-top: 50px; /* Увеличиваем отступ сверху */
-            text-align: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .footer-section {
-            flex: 1;
-            min-width: 250px;
-            padding: 0 20px;
-        }
-
-        .footer-section h3 {
-            color: #ffd700;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .footer-section p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-
-        .footer-bottom {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .heart {
-            color: #ff6b6b;
-            animation: heartbeat 1.5s infinite;
-        }
-
-        @keyframes heartbeat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
         }
 
         .secret-link {
@@ -269,9 +181,10 @@
             right: 20px;
             color: rgba(255, 255, 255, 0.3);
             text-decoration: none;
-            font-size: 12px;
+            font-size: clamp(10px, 2vw, 12px);
             transition: color 0.3s;
             z-index: 1000;
+            padding: 5px;
         }
 
         .secret-link:hover {
@@ -283,7 +196,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80%;
+            width: 95%;
             max-width: 800px;
             background: #000;
             padding: 20px;
@@ -311,10 +224,87 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+            z-index: 2001;
         }
 
-        .close-video:hover {
-            background: #ff5252;
+        footer {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 20px 0;
+            margin-top: 50px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 0 10px;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            padding: 0 10px;
+        }
+
+        .footer-section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: clamp(16px, 3vw, 18px);
+        }
+
+        .footer-section p {
+            margin: 5px 0;
+            font-size: clamp(12px, 2vw, 14px);
+        }
+
+        /* Медиа-запросы для разных устройств */
+        @media (max-width: 768px) {
+            .footer-section {
+                min-width: 200px;
+            }
+
+            .start-button {
+                width: 90%;
+            }
+
+            #gameCanvas {
+                width: 95vw;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .compliments {
+                margin: 10px auto;
+                padding: 10px;
+            }
+
+            .footer-section {
+                min-width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Поддержка сенсорных устройств */
+        @media (hover: none) {
+            .start-button:hover {
+                transform: none;
+            }
+
+            .start-button:active {
+                background: #ff5252;
+                transform: scale(0.95);
+            }
         }
     </style>
 </head>
@@ -344,7 +334,7 @@
     <div id="score">Счёт: 0</div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     
-    <a href="#" class="secret-link" onclick="showRickRoll(event)">Секретное послание</a>
+    <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" class="secret-link">Секретное послание</a>
 
     <div class="rickroll-video" id="rickrollVideo">
         <button class="close-video" onclick="closeRickRoll()">✕</button>
@@ -487,6 +477,16 @@
             checkClick(x, y);
         });
 
+        // Добавляем обработку сенсорных событий
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            checkClick(x, y);
+        }, { passive: false });
+
         // Обновление таймера
         function updateTimer() {
             if (!gameActive) return;
@@ -567,6 +567,19 @@
             document.getElementById('rickrollVideo').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
         }
+
+        // Адаптивный размер канваса
+        function resizeCanvas() {
+            const canvas = document.getElementById('gameCanvas');
+            const maxWidth = Math.min(800, window.innerWidth * 0.95);
+            const aspectRatio = 4/3;
+            canvas.width = maxWidth;
+            canvas.height = maxWidth / aspectRatio;
+        }
+
+        // Вызываем при загрузке и изменении размера окна
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
     </script>
 </body>
 </html> 
