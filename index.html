@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра для лучшей подруги</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(45deg, #8a2be2, #4b0082);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 50px; /* Добавляем отступ для подвала */
+        }
+
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin: 20px 0;
+        }
+
+        #gameCanvas {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            display: none; /* Скрываем канвас до начала игры */
+        }
+
+        #startScreen {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 600px;
+            margin: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        #startScreen h2 {
+            color: #8a2be2;
+            margin-bottom: 20px;
+        }
+
+        #startScreen p {
+            color: #333;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .start-button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 20px;
+            margin-top: 20px;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .start-button:hover {
+            background: #ff5252;
+            transform: scale(1.05);
+        }
+
+        #score {
+            font-size: 24px;
+            color: #fff;
+            margin: 20px 0;
+            display: none; /* Скрываем счёт до начала игры */
+        }
+
+        #timer {
+            font-size: 24px;
+            color: #fff;
+            margin: 10px 0;
+            display: none; /* Скрываем таймер до начала игры */
+        }
+
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .message h2 {
+            color: #8a2be2;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .message p {
+            font-size: 24px;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .video-container {
+            margin: 20px 0;
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            animation: confetti-fall 3s linear infinite;
+            z-index: 999;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #ff5252;
+        }
+
+        .compliments {
+            margin: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .rainbow-text {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(to right, #00ff00, #800080);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: rainbow 3s linear infinite;
+            background-size: 200% auto;
+        }
+
+        @keyframes rainbow {
+            0% {
+                background-position: 0% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        .compliment {
+            margin: 10px 0;
+            font-size: 20px;
+            line-height: 1.5;
+        }
+
+        footer {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 20px 0;
+            margin-top: 50px; /* Увеличиваем отступ сверху */
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            padding: 0 20px;
+        }
+
+        .footer-section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .footer-section p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .footer-bottom {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .heart {
+            color: #ff6b6b;
+            animation: heartbeat 1.5s infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .secret-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.3s;
+            z-index: 1000;
+        }
+
+        .secret-link:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .rickroll-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            background: #000;
+            padding: 20px;
+            border-radius: 15px;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .rickroll-video iframe {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .close-video {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .close-video:hover {
+            background: #ff5252;
+        }
+    </style>
+</head>
+<body>
+    <h1>Лови свои любимые чипсы! 🥰</h1>
+    
+    <div class="compliments">
+        <div class="rainbow-text">Ты самая лучшая подруга на свете!</div>
+        <div class="compliment">Твоя улыбка освещает весь мир ✨</div>
+        <div class="compliment">Ты всегда знаешь, как поднять настроение 🌟</div>
+        <div class="compliment">С тобой любое дело превращается в праздник 🎉</div>
+        <div class="compliment">Ты - настоящая волшебница дружбы 🪄</div>
+        <div class="compliment">Твоя доброта и искренность вдохновляют 💖</div>
+    </div>
+
+    <div id="startScreen">
+        <h2>Добро пожаловать в игру! 🎮</h2>
+        <p>Правила очень простые:</p>
+        <p>✨ Кликай по появляющимся чипсам</p>
+        <p>✨ У тебя есть 30 секунд</p>
+        <p>✨ За маленькие чипсы даётся больше очков</p>
+        <p>✨ Постарайся набрать как можно больше очков!</p>
+        <button class="start-button" onclick="startGame()">Начать игру</button>
+    </div>
+
+    <div id="timer">Время: 30</div>
+    <div id="score">Счёт: 0</div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <a href="#" class="secret-link" onclick="showRickRoll(event)">Секретное послание</a>
+
+    <div class="rickroll-video" id="rickrollVideo">
+        <button class="close-video" onclick="closeRickRoll()">✕</button>
+        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" 
+                title="Never Gonna Give You Up" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+        </iframe>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div id="message" class="message">
+        <h2>Поздравляю! 🎉</h2>
+        <p>Твой результат: <span id="finalScore">0</span> очков!</p>
+        <p>Ты просто супер! 🌟</p>
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" 
+                    title="Поздравление" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+            </iframe>
+        </div>
+        <button onclick="restartGame()">Играть снова</button>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>О нашей дружбе</h3>
+                <p>Создано с любовью</p>
+                <p>Для самой лучшей подруги</p>
+            </div>
+            <div class="footer-section">
+                <h3>Правила игры</h3>
+                <p>Кликай по чипсам</p>
+                <p>Собирай очки</p>
+                <p>Бей рекорды!</p>
+            </div>
+            <div class="footer-section">
+                <h3>Наши секреты</h3>
+                <p>Дружба навсегда</p>
+                <p>Вместе веселее</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Сделано с <span class="heart">❤</span> для тебя</p>
+        </div>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const messageElement = document.getElementById('message');
+        const finalScoreElement = document.getElementById('finalScore');
+        const startScreen = document.getElementById('startScreen');
+
+        let score = 0;
+        let timeLeft = 30;
+        let gameActive = false;
+        let chip = null;
+        let chipTimeout = null;
+
+        // Функция начала игры
+        function startGame() {
+            startScreen.style.display = 'none';
+            canvas.style.display = 'block';
+            scoreElement.style.display = 'block';
+            timerElement.style.display = 'block';
+            gameActive = true;
+            score = 0;
+            timeLeft = 30;
+            scoreElement.textContent = `Счёт: ${score}`;
+            createChip();
+            updateTimer();
+        }
+
+        // Создаем новый чипс
+        function createChip() {
+            if (!gameActive) return;
+
+            const size = 50 + Math.random() * 30;
+            chip = {
+                x: Math.random() * (canvas.width - size),
+                y: Math.random() * (canvas.height - size),
+                width: size,
+                height: size,
+                timeLeft: 2000
+            };
+
+            if (chipTimeout) {
+                clearTimeout(chipTimeout);
+            }
+
+            chipTimeout = setTimeout(() => {
+                if (chip) {
+                    chip = null;
+                    createChip();
+                }
+            }, chip.timeLeft);
+        }
+
+        // Отрисовка чипса
+        function drawChip() {
+            if (!chip) return;
+
+            ctx.fillStyle = '#ffd700';
+            ctx.beginPath();
+            ctx.arc(chip.x + chip.width/2, chip.y + chip.height/2, chip.width/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(chip.x + chip.width/3, chip.y + chip.height/3, chip.width/6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Проверка клика по чипсу
+        function checkClick(x, y) {
+            if (!chip || !gameActive) return;
+
+            const dx = x - (chip.x + chip.width/2);
+            const dy = y - (chip.y + chip.height/2);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < chip.width/2) {
+                score += Math.floor(100 * (chip.width/80));
+                scoreElement.textContent = `Счёт: ${score}`;
+                chip = null;
+                createChip();
+            }
+        }
+
+        // Обработчик клика
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            checkClick(x, y);
+        });
+
+        // Обновление таймера
+        function updateTimer() {
+            if (!gameActive) return;
+
+            timeLeft--;
+            timerElement.textContent = `Время: ${timeLeft}`;
+
+            if (timeLeft <= 0) {
+                endGame();
+            } else {
+                setTimeout(updateTimer, 1000);
+            }
+        }
+
+        // Функция для создания конфетти
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4b0082', '#ffd700', '#00ff00', '#ff00ff'];
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                document.body.appendChild(confetti);
+                
+                // Удаляем конфетти после анимации
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }
+
+        // Обновленная функция завершения игры
+        function endGame() {
+            gameActive = false;
+            finalScoreElement.textContent = score;
+            document.getElementById('overlay').style.display = 'block';
+            messageElement.style.display = 'block';
+            createConfetti();
+            if (chipTimeout) {
+                clearTimeout(chipTimeout);
+            }
+        }
+
+        // Обновленная функция перезапуска игры
+        function restartGame() {
+            messageElement.style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+            startScreen.style.display = 'block';
+            canvas.style.display = 'none';
+            scoreElement.style.display = 'none';
+            timerElement.style.display = 'none';
+            chip = null;
+            if (chipTimeout) {
+                clearTimeout(chipTimeout);
+            }
+        }
+
+        // Основной игровой цикл
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawChip();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Запуск игрового цикла
+        gameLoop();
+
+        // Функция для показа рикролла
+        function showRickRoll(event) {
+            event.preventDefault();
+            document.getElementById('rickrollVideo').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        // Функция для закрытия рикролла
+        function closeRickRoll() {
+            document.getElementById('rickrollVideo').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 
